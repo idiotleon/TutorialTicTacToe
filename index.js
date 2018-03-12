@@ -2,62 +2,63 @@ import React from 'react'
 import ReactDOM from 'react-dom';
 import './index.css'
 
-class ShoppingList extends React.Component{
+/**
+ *  Now when the square is clicked, it calls the onClick function that was passed by Board. Let’s recap what happens here:
+ *  1. The onClick prop on the built-in DOM <button> component tells React to set up a click event listener.
+ *  2. When the button is clicked, React will call the onClick event handler defined in Square’s render() method.
+ *  3. This event handler calls this.props.onClick(). Square’s props were specified by the Board.
+ *  4. Board passed onClick={() => this.handleClick(i)} to Square, so, when called, it runs this.handleClick(i) on the Board.
+ *  5. handleClick() method gets called
+ */
+
+/**
+ * Square no longer keeps its own state; 
+ * it receives its value from its parent Board
+ * and informs its parent when it's clicked.
+ * We call components like this "controlled components"
+ */
+class Square extends React.Component{    
     render(){
         return(
-            <div className="shopping-list">
-                <h1>
-                    Shopping List for {this.props.name}
-                </h1>
-
-                <ul>
-                    <li>Instagram</li>
-                    <li>WhatsApp</li>
-                    <li>Oculus</li>
-                </ul>
-            </div>
-        )
-    }
-}
-
-// Example usage: <ShoppingList name="Mark" />
-
-class Square extends React.Component{
-    /*  React components can have state by setting this.state
-    *   in the constructor, which should be considered private 
-    *   to the component.
-    */
-    constructor(props){
-        /*  In JavaScript classes, you need to
-        *   explicitly call super(), when defining
-        *   the constructor of a subclass
-        */
-        super(props);
-        this.state = {
-            value: null,
-        };
-    }
-    
-    render(){
-        return(
-            /*
-            *   Whenver this.setState is called, an update to
-            *   the component is scheduled, causing React to merge
-            *   in the passed state update and rerender the component
-            *   along with its dependencies. When the component rerenders,
-            *   'this.state.value' will be 'X' so you'll see X in the grid
-            */
             <button className="square" onClick={() =>
-            this.setState({value:'X'})}>
-                {this.state.value}
+            this.props.onClick()}>
+                {this.props.value}
             </button>
         );
     }
 }
 
 class Board extends React.Component{
+    /**
+     * When one wants to aggregate data from multiple children
+     * or to have two child components communicate with each other,
+     * move the state upwards so that it lives in the parent component.
+     * The parent can then pass the state back down to the children
+     * via props, so that the child components are always in sync with
+     * each other and with the parent.
+     */
+    constructor(props){
+        super(props);
+        this.state = {
+            squares: Array(9).fill(null),
+        };
+    }
+
     renderSquare(i){
-        return <Square value={i} />;
+        return <Square 
+                value={this.state.squares[i]} 
+                onClick={() => this.handleClick(i)} 
+                />;
+    }
+
+    handleClick(i){
+        /**
+         * We call .slice() to copy the squares array instead of
+         * mutating the existing array.
+         */
+        const squares = this.state.squares.slice();
+        squares[i] = 'X';
+        this.setState({squares: squares});
     }
 
     render(){
