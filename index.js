@@ -26,40 +26,16 @@ function Square(props){
 }
 
 class Board extends React.Component{
-    /**
-     * When one wants to aggregate data from multiple children
-     * or to have two child components communicate with each other,
-     * move the state upwards so that it lives in the parent component.
-     * The parent can then pass the state back down to the children
-     * via props, so that the child components are always in sync with
-     * each other and with the parent.
-     */
-    constructor(props){
-        super(props);
-        this.state = {
-            squares: Array(9).fill(null),
-            xIsNext: true,
-        };
-    }
-
     renderSquare(i){
         return (
             <Square 
                 value={this.props.squares[i]} 
                 onClick={() => this.props.onClick(i)} 
-        />);
+            />
+        );
     }
 
     render(){
-        const winner = calculateWinner(this.state.squares);
-        let status;
-        if(winner){
-            status = 'Winner: ' + winner;
-        }else{
-            status = 'Next player: ' 
-                + (this.state.xIsNext ? 'X':'O');
-        }
-
         return(
             <div>
                 <div className="board-row">
@@ -89,12 +65,13 @@ class Game extends React.Component{
             history: [{
                 squares: Array(9).fill(null),
             }],
-            xIsNext: true,
-        }
+            stepNumber: 0,
+            xIsNext: true
+        };
     }
 
     handleClick(i){
-        const history = this.state.history;
+        const history = this.state.history.slice(0, this.state.stepNumber + 1);
         const current = history[history.length - 1];
         /**
          * We call .slice() to copy the squares array instead of
@@ -106,17 +83,27 @@ class Game extends React.Component{
         }
         squares[i] = this.state.xIsNext? 'X' : 'O';
         this.setState({
-            history: history.concat([{
-                squares: squares,
-            }]),
+            history: history.concat([
+                {
+                    squares: squares,
+                }
+            ]),
+            stepNumber: history.length,
             // flip the value of xIsNext
             xIsNext: !this.state.xIsNext,
         });
     }
 
+    jumpTo(step){
+        this.setState({
+            stepNumber: step,
+            xIsNext: (step % 2) === 0,
+        });
+    }
+
     render(){
         const history = this.state.history;
-        const current = history[history.length - 1];
+        const current = history[this.state.stepNumber];
         const winner = calculateWinner(current.squares);
 
         const moves = history.map((step, move) => {
@@ -124,7 +111,7 @@ class Game extends React.Component{
                 'Go to move #' + move:
                 'Go to game start';
             return (
-                <li>
+                <li key={move}>
                     <button onClick={() => this.jumpTo(move)}>
                         {desc}
                     </button>
@@ -145,7 +132,7 @@ class Game extends React.Component{
                 <div className="game-board">
                     <Board 
                         squares={current.squares}
-                        onClick={(i) => this.handleClick(i)}
+                        onClick={i => this.handleClick(i)}
                     />
                 </div>
                 <div className="game-info">
@@ -156,6 +143,8 @@ class Game extends React.Component{
         );
     }
 }
+
+// ================================================
 
 function calculateWinner(squares){
     const lines = [
@@ -180,8 +169,6 @@ function calculateWinner(squares){
 
     return null;
 }
-
-// ================================================
 
 ReactDOM.render(
     <Game />,
