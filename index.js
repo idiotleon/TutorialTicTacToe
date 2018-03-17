@@ -11,21 +11,18 @@ import './index.css'
  *  5. handleClick() method gets called
  */
 
-/**
- * Square no longer keeps its own state; 
- * it receives its value from its parent Board
- * and informs its parent when it's clicked.
- * We call components like this "controlled components"
- */
-class Square extends React.Component{    
-    render(){
-        return(
-            <button className="square" onClick={() =>
-            this.props.onClick()}>
-                {this.props.value}
-            </button>
-        );
-    }
+ /**
+  * React supports a simpler syntact called functional components
+  * for component types like Square that only consist of a render method.
+  * Rather than define a class extending React.Component, simply write
+  * a function that takes props and returns what should be rendered.
+  */
+function Square(props){
+    return(
+        <button className="square" onClick={props.onClick}>
+            {props.value}
+        </button>
+    );
 }
 
 class Board extends React.Component{
